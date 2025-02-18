@@ -1,35 +1,52 @@
 const std = @import("std");
-const zap = @import("zap");
+const writer = std.io.getStdOut().writer();
 
-fn on_request_verbose(r: zap.Request) void {
-    if (r.path) |the_path| {
-        std.debug.print("PATH: {s}\n", .{the_path});
-    }
+fn getLowLevel(
+    url: []const u8,
+    headers: []const std.http.Header,
+    client: *std.http.Client,
+    allocator: std.mem.Allocator,
+) ![]u8 {
+    var buf: [4096]u8 = undefined;
+    var readBuff: [4096]u8 = undefined;
+    const uri = try std.Uri.parse(url);
+    var req = try client.open(.GET, uri, .{
+        .server_header_buffer = &buf,
+        .extra_headers = headers,
+    });
+    defer req.deinit();
+    try req.send();
+    try req.finish();
 
-    if (r.query) |the_query| {
-        std.debug.print("QUERY: {s}\n", .{the_query});
-    }
-    r.sendBody("<html><body><h1>Hello from ZAP!!!</h1></body></html>") catch return;
-}
+    const start = std.time.milliTimestamp();
+    try req.wait();
+    const stop = std.time.milliTimestamp();
 
-fn on_request_minimal(r: zap.Request) void {
-    r.sendBody("<html><body><h1>Hello from ZAP!!!</h1></body></html>") catch return;
+    const size = try req.read(&readBuff);
+
+    try writer.print("\n{s} {d} status={d}\n{s}\n", .{ url, stop - start, req.response.status, readBuff[0..size] });
+    const out = try allocator.alloc(u8, size);
+    std.mem.copyForwards(u8, out, readBuff[0..size]);
+    return out;
 }
 
 pub fn main() !void {
-    var listener = zap.HttpListener.init(.{
-        .port = 3000,
-        .on_request = on_request_verbose,
-        .log = true,
-        .max_clients = 100000,
-    });
-    try listener.listen();
+    const alloc = std.heap.page_allocator;
+    var arena = std.heap.ArenaAllocator.init(alloc);
+    const allocator = arena.allocator();
 
-    std.debug.print("Listening on 0.0.0.0:3000\n", .{});
+    defer arena.deinit();
 
-    // start worker threads
-    zap.start(.{
-        .threads = 2,
-        .workers = 2,
-    });
+    var client = std.http.Client{
+        .allocator = allocator,
+    };
+
+    const headers = &[_]std.http.Header{
+        .{ .name = "X-Custom-Header", .value = "application" },
+    };
+
+    const response = try getLowLevel("https://www.example.com", headers, &client, allocator);
+    try writer.print("Response:\n{s}\n", .{response});
+
+    allocator.free(response);
 }
