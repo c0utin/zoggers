@@ -1,7 +1,23 @@
 const std = @import("std");
 const writer = std.io.getStdOut().writer();
 
-fn getLowLevel(
+const types = @import("types.zig");
+
+// TODO: Create wallet type like go-ethereum-common
+const AddressBook = struct {
+    CartesiAppFactory: [20]u8,
+    AppAddressRelay: [20]u8,
+    ERC1155BatchPortal: [20]u8,
+    ERC1155SinglePortal: [20]u8,
+    ERC20Portal: [20]u8,
+    ERC721Portal: [20]u8,
+    EtherPortal: [20]u8,
+    InputBox: [20]u8,
+};
+
+const RunOpts = struct { AddressBook: AddressBook, RollupUrl: []u8 };
+
+fn get_low_level(
     url: []const u8,
     headers: []const std.http.Header,
     client: *std.http.Client,
@@ -30,6 +46,7 @@ fn getLowLevel(
     return out;
 }
 
+// TODO: Initi client for listening Cartesi-machine
 pub fn main() !void {
     const alloc = std.heap.page_allocator;
     var arena = std.heap.ArenaAllocator.init(alloc);
@@ -45,8 +62,9 @@ pub fn main() !void {
         .{ .name = "X-Custom-Header", .value = "application" },
     };
 
-    const response = try getLowLevel("https://www.example.com", headers, &client, allocator);
+    const response = try get_low_level("https://www.example.com", headers, &client, allocator);
     try writer.print("Response:\n{s}\n", .{response});
 
     allocator.free(response);
+
 }
