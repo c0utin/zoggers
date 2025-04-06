@@ -16,6 +16,7 @@ pub fn build(b: *std.Build) void {
         .root_module = exe_mod,
     });
 
+    addDependencies(b, exe);
     b.installArtifact(exe);
 
     const run_cmd = b.addRunArtifact(exe);
@@ -28,4 +29,15 @@ pub fn build(b: *std.Build) void {
 
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
+}
+
+fn addDependencies(b: *std.Build, step: *std.Build.Step.Compile) void {
+    const target = step.root_module.resolved_target.?;
+    const optimize = step.root_module.optimize.?;
+
+    const zabi = b.dependency("zabi", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    step.root_module.addImport("zabi", zabi.module("zabi"));
 }
