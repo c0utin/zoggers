@@ -8,15 +8,15 @@ pub fn main() !void {
 
     // init http client context
     // TODO
-    const AddressBook = try rollup.AddressBook.init();
-    try writer.print("EtherPortal: {any}\n", .{AddressBook.EtherPortal});
 
     // Send request example
     const alloc = std.heap.page_allocator;
     var arena = std.heap.ArenaAllocator.init(alloc);
     const allocator = arena.allocator();
-
     defer arena.deinit();
+
+    const AddressBook = try rollup.AddressBook.init(allocator);
+    try writer.print("EtherPortal: {any}\n", .{AddressBook.EtherPortal});
 
     var client = std.http.Client{
         .allocator = allocator,
