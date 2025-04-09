@@ -15,3 +15,4 @@
 # Froggers
   - [ ] Make a lot of test
   - [ ] Documentation
+  - [ ] Add examples
