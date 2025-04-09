@@ -1,32 +1,28 @@
 const std = @import("std");
-const writer = std.io.getStdOut().writer();
-
 const http = @import("http.zig");
-const rollup = @import("address.zig");
+const address = @import("address.zig");
+
+const Writer = std.io.getStdOut().writer();
+const Allocator = std.mem.Allocator;
+
+const RunOpts = struct {
+    addressBook: address.AddressBook,
+    rollupUrl: []const u8,
+
+    fn init(allocator: Allocator) !RunOpts {
+        return RunOpts{
+            .addressBook = try address.AddressBook.init(allocator),
+            .rollupUrl = "http://127.0.0.1:5004",
+        };
+    }
+};
 
 pub fn main() !void {
-
-    // init http client context
-    // TODO
-
     const alloc = std.heap.page_allocator;
     var arena = std.heap.ArenaAllocator.init(alloc);
-    const allocator = arena.allocator();
-    defer arena.deinit();
+    const parent_allocator = arena.allocator();
 
-    const AddressBook = try rollup.AddressBook.init(allocator);
-    try writer.print("EtherPortal: {any}\n", .{AddressBook.EtherPortal});
+    const RunOptions = try RunOpts.init(parent_allocator);
 
-    // Send request example
-    var client = std.http.Client{
-        .allocator = allocator,
-    };
-    defer client.deinit();
-
-    const headers = &[_]std.http.Header{
-        .{ .name = "X-Custom-Header", .value = "application" },
-    };
-
-    const response = try http.get("https://www.example.com", headers, &client, allocator);
-    try writer.print("Response:\n{s}\n", .{response});
+    try Writer.print("{any}\n", .{RunOptions.addressBook.ERC20Portal});
 }
