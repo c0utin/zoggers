@@ -82,3 +82,13 @@ pub fn address_to_bytes(
 
     return addr_bytes;
 }
+
+// Do all process of verification of a string to become a valid ethereum address
+pub fn hex_to_address(allocator: Allocator, addr: []const u8) !Address {
+    const Hex = try checksum_eip55(allocator, addr);
+    if (!is_address(Hex)) {
+        return error.InvalidAddress;
+    }
+    const addresBytes = try address_to_bytes(Hex);
+    return addresBytes;
+}
