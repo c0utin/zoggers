@@ -3,8 +3,10 @@
   - [x] Implement keccak256 in zig (std goated)
 
 # Communication
-  - [ ] Setup client context to communicate with cartesi machine.
-  - [ ] Post http req
+  - [x] Setup client context to communicate with cartesi machine.
+  - [x] Post http req
+  - [ ] Child allocation process by request
+  - [ ] Handle advance and inspect
  
 # Library
   - [ ] Make this a lib
