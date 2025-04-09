@@ -11,3 +11,7 @@
 # Library
   - [ ] Make this a lib
   - [ ] Zoggers dev template
+
+# Froggers
+  - [ ] Make a lot of test
+  - [ ] Documentation
