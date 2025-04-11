@@ -30,7 +30,6 @@ pub fn get(
 }
 
 pub fn post(
-    method: std.http.Method,
     url: []const u8,
     headers: []const std.http.Header,
     body: []const u8,
@@ -40,7 +39,7 @@ pub fn post(
     var buf: [4096]u8 = undefined;
     var readBuff: [4096]u8 = undefined;
     const uri = try std.Uri.parse(url);
-    var req = try client.open(method, uri, .{
+    var req = try client.open(.POST, uri, .{
         .server_header_buffer = &buf,
         .extra_headers = headers,
     });

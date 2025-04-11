@@ -15,6 +15,13 @@ const RunOpts = struct {
             .rollupUrl = "http://127.0.0.1:5004",
         };
     }
+
+    //fn run(self: *RunOpts) !error{
+    //TODO: Init rollup
+    //TODO: Game loop for check cartesi
+    //TODO: GetNextCartesiInput
+    //TODO: Check input type to handle
+    //}
 };
 
 pub fn main() !void {
@@ -23,6 +30,5 @@ pub fn main() !void {
     const parent_allocator = arena.allocator();
 
     const RunOptions = try RunOpts.init(parent_allocator);
-
     try Writer.print("{any}\n", .{RunOptions.addressBook.ERC20Portal});
 }
